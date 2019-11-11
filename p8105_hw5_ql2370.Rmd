@@ -28,28 +28,25 @@ output = vector("list", length = 4)
 fill_in = function(x) {
 
   if (is.numeric(x)){
- #   mean = vec_mean(x)
-    x_changed = x %>% replace_na(mean(x))
-    
-      
-    
+    x_changed = x %>% replace_na(mean(x, na.rm=TRUE))
 }
   else if(is.character(x)){
-    
+  x_changed = replace_na(x,"virginica")
+ 
   }
-  tibble(
-    change= x_changed
-  )
+  
+  tibble(x_changed)
 }
 ```
 
 
-```{r}
-mean(iris_with_missing$Sepal.Length)
-```
+
 
 ```{r}
-fill_in(x=iris_with_missing$Sepal.Length)
+output = vector("list", length = 5)
+output = bind_cols(map(iris_with_missing, fill_in))
+output
+
 ```
 
 
