@@ -14,6 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readr)
 library(dplyr)
+library(rvest)
+
 
 set.seed(10)
 
@@ -76,7 +78,7 @@ ggplot(aes(x = week, y = number, group = id, color = id)) +
   geom_point() + geom_line(aes(color = id))
 ```
 
-The difference between control arm and experimental increase by weeks.
+The difference between control arm and experimental is slightly. In addition, experimental arm increased as the week increased.
   
   
 ### Problem 3
@@ -85,19 +87,44 @@ The difference between control arm and experimental increase by weeks.
 sim_regression = function(n = 100, beta0 = 2, beta1 = 0) {
   
   sim_data = tibble(
-    x = rnorm(n, mean = 1, sd = 1),
-    y = beta0 + beta1 * x + rnorm(n, 0, 50)
+    x = rnorm(n, mean = 0, sd = 1),
+    y = beta0 + beta1 * x + rnorm(n, 0, sqrt(50))
   )
   
   ls_fit = lm(y ~ x, data = sim_data)
   
-  tibble(
-    beta0_hat = coef(ls_fit)[1],
-    beta1_hat = coef(ls_fit)[2]
-  )
+  broom::tidy(ls_fit) %>%
+    filter(term == "x") %>%
+    select(estimate, p.value)
+
 }
 ```
 
+```{r}
+output_0 = rerun(100, sim_regression(n = 30)) %>% 
+  bind_rows()
+
+output_0
+```
+
+```{r}
+b1_list = list(
+  "b1_1" = 1,
+  "b1_2" = 2,
+  "b1_3" = 3,
+  "b1_4" = 4,
+  "b1_5" = 5,
+  "b1_6" = 6
+  )
+output = vector("list", length = 6)
+for (i in 1:6) {
+  
+  output[[i]] = 
+    rerun(100, sim_regression(beta1 = b1_list[[i]])) %>% 
+    bind_rows
+  
+}
+```
 
 
 
