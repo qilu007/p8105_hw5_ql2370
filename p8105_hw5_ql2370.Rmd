@@ -107,25 +107,32 @@ output_0 = rerun(100, sim_regression(n = 30)) %>%
 output_0
 ```
 
-```{r}
-b1_list = list(
-  "b1_1" = 1,
-  "b1_2" = 2,
-  "b1_3" = 3,
-  "b1_4" = 4,
-  "b1_5" = 5,
-  "b1_6" = 6
-  )
 
-sim_output = vector("list", length = 6)
-for (i in 1:6) {
-  
-  sim_output[[i]] = 
-    rerun(100, sim_regression(beta1 = b1_list[[i]])) %>% 
-    bind_rows
-  
-}
+For plot part
+```{r}
+sim_output =  map_df(.x = 0:6, ~ rerun(100, sim_regression(n = 30, beta1 = .x) %>% 
+          mutate(beta1 = .x)) %>% 
+          bind_rows()
+)
+
+sim_plot = sim_output %>%
+  mutate(
+    reject = ifelse(p.value < 0.05, 1, 0)
+  ) %>%
+  group_by(beta1) %>%
+  summarize(propor = mean(reject)) %>%
+  mutate(
+    beta1 = factor(beta1)
+  ) 
 ```
 
+```{r}
+ggplot(sim_plot, aes(x = beta1, y = propor, fill = beta1, alpha = 0.5)) +
+  geom_histogram(stat = "identity") +
+  labs(
+    x = "Beta1",
+    y = "Proportion"
+  )
+```
 
 
